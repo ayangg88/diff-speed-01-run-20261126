@@ -43,13 +43,23 @@ function editRuns(a, b) {
   const n = a.length;
   const m = b.length;
 
+  // Padded copies: a distinct sentinel past each end (-1 and -2, never equal
+  // to a line id and never equal to each other), so a snake is one bare
+  // comparison per step and needs no bounds checks.
+  const ap = new Int32Array(n + 1);
+  ap.set(a);
+  ap[n] = -1;
+  const bp = new Int32Array(m + 1);
+  bp.set(b);
+  bp[m] = -2;
+
   // The trace: one row per depth, rows[d][k + d] the furthest old-line count
   // on diagonal k (or -1 when no path reaches it). Rows grow one at a time,
   // so nothing is ever copied, and each depth pins its two rows in locals.
   const rows = [];
   // Depth 0: the opening snake from the first lines.
   let x = 0;
-  while (x < n && x < m && a[x] === b[x]) x++;
+  while (ap[x] === bp[x]) x++;
   rows[0] = new Int32Array(1);
   rows[0][0] = x;
   let D = 0;
@@ -76,7 +86,7 @@ function editRuns(a, b) {
           vc[iW] = -1;
         } else {
           let y0 = x0 + d;
-          while (x0 < n && y0 < m && a[x0] === b[y0]) {
+          while (ap[x0] === bp[y0]) {
             x0++;
             y0++;
           }
@@ -101,7 +111,7 @@ function editRuns(a, b) {
         } else {
           let x0 = x0in;
           let y0 = x0 - k;
-          while (x0 < n && y0 < m && a[x0] === b[y0]) {
+          while (ap[x0] === bp[y0]) {
             x0++;
             y0++;
           }
@@ -125,7 +135,7 @@ function editRuns(a, b) {
           vc[2 * d] = -1;
         } else {
           let y0 = x0 - d;
-          while (x0 < n && y0 < m && a[x0] === b[y0]) {
+          while (ap[x0] === bp[y0]) {
             x0++;
             y0++;
           }
